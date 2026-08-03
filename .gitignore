@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+!.env.spark.local.example
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+checkpoints/
+logs/

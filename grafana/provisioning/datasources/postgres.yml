@@ -1,0 +1,26 @@
+apiVersion: 1
+prune: true
+
+deleteDatasources:
+  - name: Stock MySQL
+    orgId: 1
+
+datasources:
+  - name: Stock PostgreSQL
+    uid: stock_postgres
+    type: grafana-postgresql-datasource
+    access: proxy
+    url: localhost:5432
+    database: stock_market
+    user: stock_user
+    isDefault: true
+    secureJsonData:
+      password: ${POSTGRES_PASSWORD}
+    jsonData:
+      database: stock_market
+      sslmode: disable
+      postgresVersion: 1400
+      timescaledb: false
+      maxOpenConns: 10
+      maxIdleConns: 2
+      connMaxLifetime: 14400

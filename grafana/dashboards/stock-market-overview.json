@@ -1,0 +1,165 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "stock_postgres"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 3,
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH live_hours AS (SELECT DISTINCT symbol, date_trunc('hour', candle_start) AS candle_hour FROM candles_1m WHERE symbol = '$symbol'), selected_candles AS (SELECT symbol, candle_start, open_price, high_price, low_price, close_price FROM candles_1m WHERE symbol = '$symbol' UNION ALL SELECT symbol, candle_start, open_price, high_price, low_price, close_price FROM candles_1h_backfill WHERE symbol = '$symbol' AND NOT EXISTS (SELECT 1 FROM live_hours WHERE live_hours.symbol = candles_1h_backfill.symbol AND live_hours.candle_hour = date_trunc('hour', candles_1h_backfill.candle_start))) SELECT candle_start AS time, open_price AS open, high_price AS high, low_price AS low, close_price AS close FROM selected_candles WHERE candle_start >= to_timestamp($__unixEpochFrom()) AND candle_start <= to_timestamp($__unixEpochTo()) ORDER BY candle_start ASC",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "stock_postgres"
+          }
+        }
+      ],
+      "title": "$symbol Candlestick",
+      "type": "candlestick"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "stock_postgres"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 2,
+      "targets": [
+        {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT symbol, open_24h, high_24h, low_24h, close_24h, price_change, price_change_pct, total_volume, avg_volume_per_min, avg_price, updated_at FROM pair_analysis_24h ORDER BY price_change_pct DESC",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "stock_postgres"
+          }
+        }
+      ],
+      "title": "24 Hour Pair Analysis",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "stock_postgres"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "lineWidth": 1,
+            "fillOpacity": 60,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "targets": [
+        {
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "WITH live_hours AS (SELECT DISTINCT symbol, date_trunc('hour', candle_start) AS candle_hour FROM candles_1m WHERE symbol = '$symbol'), selected_candles AS (SELECT symbol, candle_start, volume FROM candles_1m WHERE symbol = '$symbol' UNION ALL SELECT symbol, candle_start, volume FROM candles_1h_backfill WHERE symbol = '$symbol' AND NOT EXISTS (SELECT 1 FROM live_hours WHERE live_hours.symbol = candles_1h_backfill.symbol AND live_hours.candle_hour = date_trunc('hour', candles_1h_backfill.candle_start))) SELECT candle_start AS time, volume AS value FROM selected_candles WHERE candle_start >= to_timestamp($__unixEpochFrom()) AND candle_start <= to_timestamp($__unixEpochTo()) ORDER BY candle_start ASC",
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "stock_postgres"
+          }
+        }
+      ],
+      "title": "$symbol Volume",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": [
+    "stock",
+    "etl",
+    "spark",
+    "kafka"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "AAPL",
+          "value": "AAPL"
+        },
+        "datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "stock_postgres"
+        },
+        "definition": "SELECT symbol FROM (SELECT DISTINCT symbol FROM candles_1m UNION SELECT DISTINCT symbol FROM candles_1h_backfill) symbols ORDER BY symbol",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Symbol",
+        "multi": false,
+        "name": "symbol",
+        "options": [],
+        "query": "SELECT symbol FROM (SELECT DISTINCT symbol FROM candles_1m UNION SELECT DISTINCT symbol FROM candles_1h_backfill) symbols ORDER BY symbol",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Stock Market Overview",
+  "version": 7,
+  "weekStart": ""
+}
