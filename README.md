@@ -50,6 +50,11 @@ cp .env.example .env
 python3 src/producer/finnhub_websocket_producer.py
 ```
 
+## AWS Demo
+
+Grafana dashboard: [http://16.16.143.249:3000](http://16.16.143.249:3000)
+
+The dashboard is hosted on the project's AWS EC2 deployment.
 ## Components
 
 - Kafka and Zookeeper: event ingestion and buffering
